@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Safe Space</title>
+    <style>
+        :root {
+            --primary: #ff4d6d;
+            --secondary: #ff758f;
+            --glass: rgba(255, 255, 255, 0.1);
+            --text: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 40px;
+            width: 85%;
+            max-width: 600px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 15px;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        /* Mood Selector Styling */
+        .mood-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            background: #1a1a2e;
+            color: white;
+            border: 1px solid var(--primary);
+            font-size: 1rem;
+            margin-bottom: 20px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        #mood-display {
+            min-height: 80px;
+            padding: 15px;
+            font-style: italic;
+            line-height: 1.6;
+            color: #eee;
+            border-left: 3px solid var(--primary);
+            background: rgba(255, 77, 109, 0.1);
+            border-radius: 0 10px 10px 0;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .footer { margin-top: 30px; font-size: 0.8rem; opacity: 0.6; }
+        #canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="glass-card">
+        <h1>For My Everything</h1>
+        
+        <div class="stats-grid">
+            <div class="stat-box">
+                <span class="stat-value" id="daysCount">0</span>
+                Days together
+            </div>
+            <div class="stat-box">
+                <span class="stat-value">∞</span>
+                Minutes on call
+            </div>
+        </div>
+
+        <p>Whether we're sleeping on a call or seeing each other in person, I want you to know this is your safe space.</p>
+
+        <div class="mood-section">
+            <label for="moodSelect" style="display:block; margin-bottom:10px;">How are you feeling right now?</label>
+            <select id="moodSelect" onchange="updateMood()">
+                <option value="">-- Select a mood --</option>
+                <option value="miss">I miss you</option>
+                <option value="tired">I'm feeling tired/stressed</option>
+                <option value="happy">I'm feeling happy</option>
+                <option value="insecure">I'm feeling a bit insecure</option>
+                <option value="proud">I need a reminder...</option>
+            </select>
+
+            <div id="mood-display"></div>
+        </div>
+
+        <div class="footer">
+            Built with love by Mohau.
+        </div>
+    </div>
+
+    <script>
+        const moods = {
+            miss: "I'm probably thinking about you right now, too. Even if we aren't on a call, you're in my heart. I can't wait for our next 'I love you.'",
+            tired: "Take a deep breath. You work so hard and I am so incredibly proud of you. Just remember I'm here to be your peace when the world is loud.",
+            happy: "Your happiness is literally my favorite thing. Seeing you smile makes everything worth it. Let's keep this energy going forever!",
+            insecure: "You are the only one for me. I feel so safe with you, and I want you to feel that same security in us. You are more than enough.",
+            proud: "I just wanted to remind you: I am so proud of the woman you are. Everything you do, you do with grace. I'm your biggest fan."
+        };
+
+        function updateMood() {
+            const select = document.getElementById('moodSelect');
+            const display = document.getElementById('mood-display');
+            const val = select.value;
+
+            if (val) {
+                display.textContent = moods[val];
+                display.style.display = 'block';
+            } else {
+                display.style.display = 'none';
+            }
+        }
+
+        // Days Counter Logic
+        const startDate = new Date("2026-03-12");
+        const today = new Date();
+        const diff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+        document.getElementById("daysCount").textContent = diff;
+
+        // Background Particles
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particles = [];
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 2 - 1;
+                this.speedY = Math.random() * 2 - 1;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                if (this.y < 0) this.y = canvas.height;
+            }
+            draw() {
+                ctx.fillStyle = 'rgba(255, 77, 109, 0.3)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function init() {
+            for (let i = 0; i < 70; i++) particles.push(new Particle());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+
+        init();
+        animate();
+    </script>
+</body>
+</html>
